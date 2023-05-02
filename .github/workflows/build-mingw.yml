@@ -11,14 +11,14 @@ jobs:
     name: Create Release
     runs-on: windows-latest
     env:
-      libraryName: exiv2
-      cmakeInstallationPath: exiv2-installation
-      tagName: v0.27.6
-      mingwTargetZip: exiv2-${{ github.ref_name }}-mingw64-x86_64-posix-seh-rev0-8.1.0.zip
+      libraryName: audioFlux
+      cmakeInstallationPath: audioFlux-installation
+      tagName: v0.1.6
+      mingwTargetZip: audioFlux-${{ github.ref_name }}-mingw64-x86_64-posix-seh-rev0-8.1.0.zip
     steps:
       - name: git clone
         shell: cmd
-        run: git clone --recursive https://github.com/Exiv2/exiv2.git && cd exiv2 && git checkout ${{ env.tagName }}
+        run: git clone --recursive https://github.com/libAudioFlux/audioFlux.git && cd audioFlux && git checkout ${{ env.tagName }}
         
       - name: curl x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z
         shell: cmd
@@ -28,17 +28,17 @@ jobs:
         shell: cmd
         run: cd /d ${{ github.workspace }} && curl https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-windows-x86_64.zip -L --output cmake-3.24.0-windows-x86_64.zip && dir && 7z.exe x cmake-3.24.0-windows-x86_64.zip
         
-      - name: curl zlib
-        shell: cmd
-        run: |
-          curl https://github.com/dirkarnez/zlib-prebuilt/releases/download/v1.2.13/zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -L -O -J &&^
-          7z.exe x zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0"
-          
-      - name: curl libexpat
-        shell: cmd
-        run: |
-          curl https://github.com/dirkarnez/libexpat-prebuilt/releases/download/v2.5.0/libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip  -L -O -J &&^
-          7z.exe x libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0"
+#      - name: curl zlib
+#        shell: cmd
+#        run: |
+#          curl https://github.com/dirkarnez/zlib-prebuilt/releases/download/v1.2.13/zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -L -O -J &&^
+#          7z.exe x zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0"
+#          
+#      - name: curl libexpat
+#        shell: cmd
+#        run: |
+#          curl https://github.com/dirkarnez/libexpat-prebuilt/releases/download/v2.5.0/libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip  -L -O -J &&^
+#          7z.exe x libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0"
           
       - name: set PATH, check mingw version, cmake generate, build and install
         shell: cmd
@@ -49,17 +49,10 @@ jobs:
             ${{ github.workspace }}\cmake-3.24.0-windows-x86_64\bin;
             set CD_LINUX=%CD:\=/%
             gcc --version &&^
-            cd exiv2 &&^
+            cd audioFlux\src &&^
             cmake.exe -G "MinGW Makefiles" ^
             -DCMAKE_BUILD_TYPE=Release ^
-            -DDCMAKE_POLICY_DEFAULT_CMP0091=NEW ^
-            -DZLIB_ROOT="%CD_LINUX%/zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0" ^
-            -DZLIB_USE_STATIC_LIBS=ON ^
-            -DPC_EXPAT_INCLUDE_DIRS="%CD_LINUX%/libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0/include" ^
-            -DPC_EXPAT_LIBRARY_DIRS="%CD_LINUX%/libexpat-v2.5.0-mingw64-x86_64-posix-seh-rev0-8.1.0/lib" ^
             -DBUILD_SHARED_LIBS=OFF ^
-            -DEXIV2_BUILD_SAMPLES=OFF ^
-            -DEXIV2_BUILD_UNIT_TESTS=OFF ^
             -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
             cd cmake-build && cmake --build . && cmake --install . 
             
@@ -67,12 +60,12 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
-          directory: "exiv2/cmake-build/${{ env.cmakeInstallationPath }}"
+          directory: "audioFlux/src/cmake-build/${{ env.cmakeInstallationPath }}"
           filename: "${{ env.mingwTargetZip }}"
           
       - name: Release prebuilt
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "exiv2/cmake-build/${{ env.cmakeInstallationPath }}/${{ env.mingwTargetZip }}"
+          artifacts: "audioFlux/src/cmake-build/${{ env.cmakeInstallationPath }}/${{ env.mingwTargetZip }}"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
